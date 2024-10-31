@@ -1,3 +1,55 @@
+
+PVE 8.2 Linux pve 6.8.12-1-pve #1 SMP PREEMPT_DYNAMIC PMX 6.8.12-1 (2024-08-05T16:17Z) x86_64 GNU/Linux
+
+1、安装 dkms 及头文件
+apt update && apt install -y pve-headers proxmox-headers-$(uname -r) dkms 
+-----------------------------------------------
+
+2、确保有github的连通性，克隆i915-sriov-dkms
+git clone https://github.com/strongtz/i915-sriov-dkms.git
+-----------------------------------------------
+
+3、进入i915-sriov-dkms文件夹,纳入模块
+dkms add .
+-----------------------------------------------
+
+4、安装i915 dkms模块
+dkms install -m i915-sriov-dkms -v $(cat VERSION) --force
+-----------------------------------------------
+
+5、安装sysfsutils
+apt install sysfsutils -y
+-----------------------------------------------
+
+6、sysfs设置属性，一般intel核显总线位置都是在0000:00:02.0位置，不清楚的话lspci | grep VGA查找GPU总线位置
+echo "devices/pci0000:00/0000:00:02.0/sriov_numvfs = 7" > /etc/sysfs.conf
+-----------------------------------------------
+
+7、以下分为grub和efi引导，如果pve系统使用lvm情况下执行grub方法，如果pve系统使用zfs按efi执行
+
+GRUB
+nano /etc/default/grub
+GRUB_CMDLINE_LINUX_DEFAULT="intel_iommu=on i915.enable_guc=3 i915.max_vfs=7" 
+之后执行
+update-grub
+update-initramfs -u -k all
+-------------------------------------------
+EFI
+nano /etc/kernel/cmdline
+root=ZFS=rpool/ROOT/pve-1 boot=zfs quiet intel_pstate=passive intel_iommu=on 
+最后面加入 i915.enable_guc=3 i915.max_vfs=7
+之后执行
+update-initramfs -u -k all
+pve-efiboot-tool refresh
+-----------------------------------------------
+8、win10\11虚拟机，增加PCI设备
+设备选择 0000:00:02.1~7都可以，勾选主GPU、ROM-BAR 、PCIE，所有功能一定不要勾，勾了之后是该虚拟机独占GPU,虚拟机显示选择  VirtIO-GPU，我试了下，如果选择默认、VGA等等，WIN10系统的核显会有43代码错误，无法运行
+![image](https://github.com/user-attachments/assets/c8429868-15c9-481d-ab3f-028214289ca9)
+
+
+
+
+
 # Linux i915 driver (dkms module) with SR-IOV support for linux 6.1 ~ linux 6.11
 
 Originally from [linux-intel-lts](https://github.com/intel/linux-intel-lts/tree/lts-v5.15.49-adl-linux-220826T092047Z/drivers/gpu/drm/i915)
