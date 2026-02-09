@@ -50,10 +50,13 @@ root=ZFS=rpool/ROOT/pve-1 boot=zfs quiet intel_pstate=passive intel_iommu=on
 之后执行
 update-initramfs -u -k all
 pve-efiboot-tool refresh
+
 ---------------------new------------------
+
 Update grub and initramfs by executing 
 update-grub
 update-initramfs -u
+
 ---------------------new------------------
 
 Optionally pin the kernel version and update the boot config via proxmox-boot-tool.
