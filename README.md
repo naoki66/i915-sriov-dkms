@@ -1,21 +1,29 @@
 
-PVE 8.2 Linux pve 6.8.12-1-pve #1 SMP PREEMPT_DYNAMIC PMX 6.8.12-1 (2024-08-05T16:17Z) x86_64 GNU/Linux
+使用工具更新pve及换源
 
+短域名 - Cloudflare 全球网络
+bash <(curl -sSL https://pve.u3u.icu/PVE-Tools.sh)
+中国大陆网络
+bash <(curl -sSL https://ghfast.top/raw.githubusercontent.com/Mapleawaa/PVE-Tools-9/main/PVE-Tools.sh)
+国际网络
+bash <(curl -sSL https://raw.githubusercontent.com/Mapleawaa/PVE-Tools-9/main/PVE-Tools.sh)
+一定选官方，否则pve-headers proxmox-headers-$(uname -r) 无法安装
 1、安装 dkms 及头文件
 
 apt update && apt install -y pve-headers proxmox-headers-$(uname -r) dkms 
 
+apt install build-* dkms
+
+apt install proxmox-default-kernel proxmox-default-headers
+
 2、确保有github的连通性，克隆i915-sriov-dkms
 
-git clone https://github.com/strongtz/i915-sriov-dkms.git
+Download deb package from the releases page https://github.com/strongtz/i915-sriov-dkms/releases
 
-3、进入i915-sriov-dkms文件夹,纳入模块
+wget -O /tmp/i915-sriov-dkms_2026.02.04_amd64.deb "https://github.com/strongtz/i915-sriov-dkms/releases/download/2026.02.04/i915-sriov-dkms_2026.02.04_amd64.deb"
 
-dkms add .
+Install the deb package with dpkg: dpkg -i /tmp/i915-sriov-dkms_2026.02.04_amd64.deb
 
-4、安装i915 dkms模块
-
-dkms install -m i915-sriov-dkms -v $(cat VERSION) --force
 
 5、安装sysfsutils
 
@@ -30,7 +38,7 @@ echo "devices/pci0000:00/0000:00:02.0/sriov_numvfs = 7" > /etc/sysfs.conf
 
 GRUB
 nano /etc/default/grub
-GRUB_CMDLINE_LINUX_DEFAULT="intel_iommu=on i915.enable_guc=3 i915.max_vfs=7" 
+GRUB_CMDLINE_LINUX_DEFAULT="quiet intel_iommu=on i915.enable_guc=3 i915.max_vfs=7 module_blacklist=xe"
 之后执行
 update-grub
 update-initramfs -u -k all
@@ -42,6 +50,18 @@ root=ZFS=rpool/ROOT/pve-1 boot=zfs quiet intel_pstate=passive intel_iommu=on
 之后执行
 update-initramfs -u -k all
 pve-efiboot-tool refresh
+---------------------new------------------
+Update grub and initramfs by executing 
+update-grub
+update-initramfs -u
+---------------------new------------------
+
+Optionally pin the kernel version and update the boot config via proxmox-boot-tool.
+
+In order to enable the VFs, a sysfs attribute must be set. Install sysfsutils, then do 
+
+echo "devices/pci0000:00/0000:00:02.0/sriov_numvfs = 7" > /etc/sysfs.conf 
+
 
 
 8、win10\11虚拟机，增加PCI设备
