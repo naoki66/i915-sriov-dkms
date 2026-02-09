@@ -1,13 +1,19 @@
-
 使用工具更新pve及换源
 
 短域名 - Cloudflare 全球网络
+
 bash <(curl -sSL https://pve.u3u.icu/PVE-Tools.sh)
+
 中国大陆网络
+
 bash <(curl -sSL https://ghfast.top/raw.githubusercontent.com/Mapleawaa/PVE-Tools-9/main/PVE-Tools.sh)
+
 国际网络
+
 bash <(curl -sSL https://raw.githubusercontent.com/Mapleawaa/PVE-Tools-9/main/PVE-Tools.sh)
-一定选官方，否则pve-headers proxmox-headers-$(uname -r) 无法安装
+
+一定选官方源，否则可能pve-headers proxmox-headers-$(uname -r) 无法安装
+
 1、安装 dkms 及头文件
 
 apt update && apt install -y pve-headers proxmox-headers-$(uname -r) dkms 
